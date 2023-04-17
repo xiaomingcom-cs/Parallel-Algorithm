@@ -1,5 +1,5 @@
-// student name:
-// id number:
+// student name:ÍõÏþÃ÷
+// id number:202000130206
 
 #define CUTOFF 1024
 
@@ -25,39 +25,39 @@ int main()
 
   double t = omp_get_wtime();
   // add your codes begin
+  int max_val = *max_element(data.begin(), data.end());
+  omp_set_num_threads(64);
+  int num_threads = omp_get_max_threads();
+  for (int exp = 1; max_val / exp > 0; exp *= 10)
+  {
+    vector<int> output(SIZE);
+    int count[10] = {0};
+#pragma omp parallel for num_threads(num_threads)
+    for (int i = 0; i < SIZE; i++)
+    {
+      int digit = (data[i] / exp) % 10;
+#pragma omp atomic
+      count[digit]++;
+    }
+
+    for (int i = 1; i < 10; i++)
+      count[i] += count[i - 1];
+
+    for (int i = SIZE - 1; i >= 0; i--)
+    {
+      int digit = (data[i] / exp) % 10;
+      output[count[digit] - 1] = data[i];
+#pragma omp atomic
+      count[digit]--;
+    }
+#pragma omp parallel for num_threads(num_threads)
+    for (int i = 0; i < SIZE; i++)
+      data[i] = output[i];
+  }
   // add your codes end
   t = omp_get_wtime() - t;
   printf("time %f %d\n", t, SIZE);
 
   for (int i = 0; i < SIZE - 1; i++)
     assert(data[i] <= data[i + 1]);
-}
-
-#include <omp.h>
-#define NPOINTS 1000
-#define MXITR 1000
-void testpoint(void);
-struct d_complex
-{
-  double r;
-  double i;
-};
-struct d_complex c;
-int numoutside = 0;
-int main()
-{
-  int i, j;
-  double area, error, eps = 1.0e-5;
-#pragma omp parallel for default(shared) private(c, eps)
-  for (i = 0; i < NPOINTS; i++)
-  {
-    for (j = 0; j < NPOINTS; j++)
-    {
-      c.r = -2.0 + 2.5 * (double)(i) / (double)(NPOINTS) + eps;
-      c.i = 1.125 * (double)(j) / (double)(NPOINTS) + eps;
-      testpoint();
-    }
-  }
-  area = 2.0 * 2.5 * 1.125 * (double)(NPOINTS * NPOINTS - numoutside) / (double)(NPOINTS * NPOINTS);
-  error = area / (double)NPOINTS;
 }
